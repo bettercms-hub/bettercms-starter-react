@@ -1,0 +1,88 @@
+import type { ContentBlock } from "@bettercms-ai/types";
+import type { DeliveryForm } from "@bettercms-ai/sdk";
+import snapshot from "virtual:bcms-content";
+
+/**
+ * Read the deploy Action's build snapshot (`bcms-content.json`): entries grouped under
+ * `collections` by model slug (depth-1 hydrated), plus published pages and forms. A static
+ * build resolves everything from here — no API key needed at build time. Absent file → empty
+ * (e.g. before `npm run fetch-content` locally).
+ *
+ * The Astro/Next starters `readFileSync` this at module scope; a Vite app can't (the same
+ * module is bundled for the browser), so the snapshot arrives through the `virtual:bcms-content`
+ * plugin in vite.config.ts instead. Everything below is otherwise identical to those starters
+ * on purpose — same field shapes, same helper names, so the three stay diffable.
+ */
+export interface SnapshotPage {
+  slug: string;
+  title: string;
+  metaTitle?: string | null;
+  metaDescription?: string | null;
+  blocks: ContentBlock[];
+}
+export type SnapshotEntry<T> = { slug: string; data: T };
+interface Snapshot {
+  collections?: Record<string, SnapshotEntry<unknown>[]>;
+  pages?: SnapshotPage[];
+  forms?: DeliveryForm[];
+  turnstileSiteKey?: string | null;
+}
+
+const snap = (): Snapshot => snapshot as Snapshot;
+
+export const getPage = (slug: string): SnapshotPage | undefined =>
+  (snap().pages ?? []).find((p) => p.slug === slug);
+export const getForms = (): { items: DeliveryForm[]; turnstileSiteKey: string | undefined } => ({
+  items: snap().forms ?? [],
+  turnstileSiteKey: snap().turnstileSiteKey ?? undefined,
+});
+export const listEntries = <T>(model: string): SnapshotEntry<T>[] =>
+  (snap().collections?.[model] ?? []) as SnapshotEntry<T>[];
+export const getEntry = <T>(model: string, slug: string): SnapshotEntry<T> | undefined =>
+  listEntries<T>(model).find((e) => e.slug === slug);
+
+/** Singleton models (site/home/…) have exactly one entry — return its data. */
+export const getSingleton = <T>(model: string): T | undefined => listEntries<T>(model)[0]?.data;
+
+// ── Site globals (the `site` singleton: brand/nav/footer chrome, editable in the CMS) ──────────
+/** Repeatable/zoned-array fields arrive as `{ repeatable: [...] }` at delivery depth ≥ 1. */
+export type Repeatable<T> = { repeatable?: T[] };
+export type NavLink = { label: string; href: string };
+export type Social = { label: string; href: string };
+/** The `site` global — brand + chrome + SEO defaults, all editable in the CMS.
+ *  Every field here is seeded by the template and rendered somewhere; if you add one,
+ *  render it, and if you stop rendering one, drop it from the seed. */
+export type Site = {
+  brandName?: string;
+  navLinks?: Repeatable<NavLink>;
+  footerTagline?: string;
+  socials?: Repeatable<Social>;
+  seoTitle?: string;
+  seoDescription?: string;
+  ogImage?: Image;
+  twitterHandle?: string;
+};
+/** Unwrap a repeatable field to a plain list. */
+export const items = <T>(field?: Repeatable<T>): T[] => (Array.isArray(field?.repeatable) ? field.repeatable : []);
+
+// Field shapes seeded by the Marketing Starter template.
+export type Image = { url: string; alt?: string };
+export type RichText = { html: string };
+export type Author = { name: string; role?: string; bio?: string; avatar?: Image };
+export type BlogPostFields = {
+  title: string;
+  excerpt?: string;
+  coverImage?: Image;
+  body?: RichText;
+  author?: { slug: string; data?: Author } | string;
+  publishedDate?: string;
+};
+export type CaseStudyFields = {
+  title: string;
+  client?: string;
+  summary?: string;
+  coverImage?: Image;
+  body?: RichText;
+};
+export const authorData = (a: BlogPostFields["author"]): Author | null =>
+  !a || typeof a === "string" ? null : a.data ?? null;
