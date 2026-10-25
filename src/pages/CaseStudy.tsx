@@ -1,7 +1,8 @@
 /** One case study. Same shape as BlogPost — see its note on why every field is tagged. */
 import { Link, useParams } from "react-router-dom";
 import { Layout } from "../components/Layout";
-import { BcmsField } from "../components/BcmsField";
+import { BcmsField } from "@bettercms-ai/react";
+import { EntryImage } from "../components/EntryImage";
 import { listEntries, getEntry, type CaseStudyFields } from "../lib/content";
 import { caseStudySchema } from "../lib/seo";
 
@@ -32,12 +33,12 @@ export function CaseStudy() {
             </BcmsField>
           )}
           {f.coverImage?.url && (
-            <img
+            <EntryImage
               className="cover"
-              src={f.coverImage.url}
-              alt={f.coverImage.alt ?? ""}
-              data-bcms-field="coverImage"
-              data-bcms-kind="image"
+              image={f.coverImage}
+              path="coverImage"
+              sizes="(min-width: 680px) 610px, 100vw"
+              loading="eager"
             />
           )}
           {f.summary && (

@@ -20,7 +20,9 @@ export interface SnapshotPage {
   metaDescription?: string | null;
   blocks: ContentBlock[];
 }
-export type SnapshotEntry<T> = { slug: string; data: T };
+/** `id` is the entry's delivery id: what `entryAttrs`/`entryField` declare a card with. A snapshot
+ *  written before ids were kept has none, and those helpers then emit nothing rather than fail. */
+export type SnapshotEntry<T> = { id?: string; slug: string; data: T };
 interface Snapshot {
   collections?: Record<string, SnapshotEntry<unknown>[]>;
   pages?: SnapshotPage[];

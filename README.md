@@ -42,6 +42,19 @@ Routes with dynamic segments (`/blog/:slug`, `/case-studies/:slug`) export a `ge
 that lists their slugs from the content snapshot. A new post appears as a new HTML file on the
 next build; publishing in the CMS triggers that build automatically.
 
+## Dependencies
+
+| Package | What it does here |
+|---------|-------------------|
+| `@bettercms-ai/react` | The React adapter: `<BcmsBlocks>` (CMS pages, form blocks included), `<BcmsField>`, `<BcmsImage>`, `entryAttrs` / `entryField`, and `<BcmsProvider>` for the visual editor |
+| `@bettercms-ai/sdk` | `resolveSeo` for the `<head>`, and the `DeliveryForm` type |
+| `@bettercms-ai/types` | Content types (`ContentBlock`) |
+| `vite-react-ssg` | Prerenders every route to static HTML and hydrates it |
+
+The adapter also ships hooks (`usePage`, `useEntries`, …) that read the API at runtime. This
+starter does not call them: it renders from the build snapshot below, so every route is complete
+static HTML.
+
 ## Where content comes from
 
 Everything renders from `bcms-content.json`, the build snapshot — no API key at build time, no
@@ -54,8 +67,23 @@ The one thing that does talk to the API at runtime is form submission — see `s
 
 ## Visual editing
 
-Entry fields are tagged with `data-bcms-field` (via `src/components/BcmsField.tsx`, or directly
-on an `<img>` for images), which is all the BetterCMS visual editor needs to bind click-to-edit.
-It stamps its own ids from those attributes after hydration and re-stamps on repaint, so a
-client-rendered React tree behaves exactly like the Astro starter's server-rendered one. If you
-render a field's value, tag it — an untagged field falls back to fuzzy text matching.
+Every rendered value carries its binding, which is all the BetterCMS visual editor needs for
+click-to-edit. All of it comes from `@bettercms-ai/react`:
+
+- **CMS pages** — `<BcmsBlocks>` binds every block it renders.
+- **A post or case study** — the adapter's `<BcmsField path="title">` puts `data-bcms-field` on
+  the element it wraps, and `src/components/EntryImage.tsx` renders the cover with
+  `<BcmsImage path="coverImage">` (BetterCMS media; any other URL is drawn as stored, with the same
+  binding). Paths are relative to the entry the route renders.
+- **The blog and case-study indexes** — each card spreads `entryAttrs(entry)` and each text part
+  `entryField(entry, "title")`, so a card binds to its entry by id rather than by its text.
+
+If you render a field's value, tag it — an untagged field falls back to fuzzy text matching.
+
+`src/components/Root.tsx` wraps every route in `<BcmsProvider env={import.meta.env}>`. Not for
+data (no hook reads through it): it answers the editor canvas's re-render request, turns on
+draft mode from the editor's *Preview on site* link (`<html data-bcms-draft="1">` and the
+click-to-edit overlay), and adds `<meta name="generator">` if the page lacks it (`index.html`
+carries it statically). Its render is only a context, so the prerendered HTML is unchanged. It
+needs `PUBLIC_BCMS_WORKSPACE` (and reads `PUBLIC_BCMS_API_URL`, and `PUBLIC_BCMS_PROJECT_ID` when
+set); a build without a workspace renders the same pages with no provider.
