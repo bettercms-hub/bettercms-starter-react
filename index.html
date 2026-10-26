@@ -3,6 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- What Wappalyzer and BuiltWith read to name the CMS. <BcmsProvider> adds the same tag in
+         the browser when it is missing; here it is in every prerendered file, for crawlers that
+         never run the script. -->
+    <meta name="generator" content="BetterCMS" />
     <!-- No <title> here on purpose. Layout.tsx renders the per-route title, description,
          canonical, OG/Twitter tags and JSON-LD through vite-react-ssg's <Head>, which injects
          them into this document at prerender time — so every built page carries its own. A

@@ -36,4 +36,9 @@ export default defineConfig({
   // the deploy Action sets the same variables for all three repos.
   envPrefix: ["VITE_", "PUBLIC_"],
   build: { outDir: "dist" },
+  // @bettercms-ai/richtext, which the adapter's block renderer imports, ships TypeScript source,
+  // not built JS. The prerender's server bundle leaves node_modules to Node by default, and Node
+  // refuses to strip types under node_modules. Bundling the whole @bettercms-ai scope lets Vite
+  // compile it (bundling richtext alone would not: its importer would still load from Node).
+  ssr: { noExternal: [/^@bettercms-ai\//] },
 });

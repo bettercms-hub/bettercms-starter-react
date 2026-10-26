@@ -13,8 +13,8 @@
     "fetch-content": "node scripts/fetch-content.mjs"
   },
   "dependencies": {
-    "@bettercms-ai/next": "^0.11.0",
-    "@bettercms-ai/sdk": "^1.10.0",
+    "@bettercms-ai/react": "^0.4.0",
+    "@bettercms-ai/sdk": "^1.40.0",
     "@bettercms-ai/types": "^1.7.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

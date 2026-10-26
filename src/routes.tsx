@@ -14,9 +14,11 @@ import { BlogIndex, CaseStudyIndex } from "./pages/CollectionIndex";
 import { BlogPost, getStaticPaths as blogPaths } from "./pages/BlogPost";
 import { CaseStudy, getStaticPaths as casePaths } from "./pages/CaseStudy";
 import { NotFound } from "./pages/NotFound";
+import { Root } from "./components/Root";
 import { brandName } from "./lib/seo";
 
-export const routes: RouteRecord[] = [
+/** Every page, under the pathless <Root> (the visual editor's session, see Root.tsx). */
+const pages: RouteRecord[] = [
   { path: "/", element: <CmsPage slug="home" />, entry: "src/pages/CmsPage.tsx" },
   { path: "/about", element: <CmsPage slug="about" fallbackTitle={`About — ${brandName()}`} /> },
   { path: "/contact", element: <CmsPage slug="contact" fallbackTitle={`Contact — ${brandName()}`} /> },
@@ -31,3 +33,5 @@ export const routes: RouteRecord[] = [
   // …and the catch-all as well, for a bad link followed inside an already-loaded session.
   { path: "*", element: <NotFound /> },
 ];
+
+export const routes: RouteRecord[] = [{ element: <Root />, children: pages }];

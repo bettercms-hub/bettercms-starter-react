@@ -1,14 +1,16 @@
 /**
  * One blog post, hand-rendered from its entry fields.
  *
- * Every field carries a `data-bcms-field` (via <BcmsField>, or directly on the <img>) so the
- * visual editor can bind click-to-edit. That is the whole contract — the editor stamps its own
- * ids from these attributes after hydration, so a client-rendered React tree binds exactly like
- * the Astro starter's server-rendered one.
+ * Every field carries a `data-bcms-field` (the adapter's <BcmsField>, or <EntryImage path> for
+ * the cover) so the visual editor can bind click-to-edit. That is the whole contract — the editor
+ * stamps its own ids from these attributes after hydration, so a client-rendered React tree binds
+ * exactly like the Astro starter's server-rendered one. Paths are relative: on an entry's own
+ * route they resolve against that entry.
  */
 import { Link, useParams } from "react-router-dom";
 import { Layout } from "../components/Layout";
-import { BcmsField } from "../components/BcmsField";
+import { BcmsField } from "@bettercms-ai/react";
+import { EntryImage } from "../components/EntryImage";
 import { listEntries, getEntry, authorData, type BlogPostFields } from "../lib/content";
 import { blogPostingSchema } from "../lib/seo";
 
@@ -46,12 +48,12 @@ export function BlogPost() {
           </BcmsField>
           {byline && <p className="byline">{byline}</p>}
           {f.coverImage?.url && (
-            <img
+            <EntryImage
               className="cover"
-              src={f.coverImage.url}
-              alt={f.coverImage.alt ?? ""}
-              data-bcms-field="coverImage"
-              data-bcms-kind="image"
+              image={f.coverImage}
+              path="coverImage"
+              sizes="(min-width: 680px) 610px, 100vw"
+              loading="eager"
             />
           )}
           {f.body?.html && (

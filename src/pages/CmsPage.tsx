@@ -6,7 +6,7 @@
  * comes out of <BcmsBlocks> too: a `form` block resolves its formId against the snapshot's
  * forms and renders inline exactly where it was dropped in the page builder.
  */
-import { BcmsBlocks } from "@bettercms-ai/next/blocks";
+import { BcmsBlocks } from "@bettercms-ai/react";
 import { Layout } from "../components/Layout";
 import { getPage, getForms } from "../lib/content";
 import { API_URL } from "../lib/config";
